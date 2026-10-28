@@ -11,7 +11,7 @@ Use this fork's `feat/harness2-integration` branch, Node 24, Python 3.12 or 3.13
 ```sh
 uv venv --python 3.12 .venv
 source .venv/bin/activate
-uv pip install 'harness2 @ git+https://github.com/LuciyVI/harness2.git@dsh-integration-v1'
+uv pip install 'harness2 @ git+https://github.com/LuciyVI/harness2.git@dsh-integration-v2'
 python apps/cli/config/examples/harness2/install.py --profile web
 ```
 
@@ -37,7 +37,9 @@ Trial runs leave the live project untouched. The regular dsh agent receives the 
 
 Each model session has a 3600-second default deadline; a complete cycle includes several sessions. Change `timeout`, `k` or `outputRoot` in the installed `harness2-mode` entry. Status reports the active artifact path; the adjacent log reports progress. Failed and cancelled runs retain their artifacts and are not successful results.
 
-Text tasks and project files are supported. Use ordinary dsh for chat attachments. Snapshots exclude virtual environments, `node_modules`, `.git`, `.env` credentials and Erlang `_build` output. Internal symbolic links are relocated into each copy; external and broken links are rejected. Snapshots above 100 MB or 10,000 entries are rejected. The snapshot manifest records exclusions.
+Text tasks and project files are supported. Use ordinary dsh for chat attachments. In a Git project, snapshots select tracked files and non-ignored untracked inputs. Git submodules and nested repositories are excluded without traversing their contents. This keeps ignored build trees and local reference repositories out of the snapshot. Plain folders use the runtime and credential filters. Internal symbolic links are relocated into each copy; external and broken links are rejected.
+
+Default limits remain 100 MB and 10,000 entries. Configure `snapshotMaxBytes`, `snapshotMaxFiles` and project-relative `snapshotExclude` globs in the installed plugin entry when needed. `snapshot.json` records byte/file counts, largest selected files and exclusion reasons, including Git submodules; it is retained on a planning failure and names the metric and path that exceeded the limit.
 
 After a failed turn, send the original task again to create a fresh cycle. An old failure card remains a record of its original attempt. Remove the integration with:
 

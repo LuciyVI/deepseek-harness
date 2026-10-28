@@ -11,7 +11,7 @@
 ```sh
 uv venv --python 3.12 .venv
 source .venv/bin/activate
-uv pip install 'harness2 @ git+https://github.com/LuciyVI/harness2.git@dsh-integration-v1'
+uv pip install 'harness2 @ git+https://github.com/LuciyVI/harness2.git@dsh-integration-v2'
 python apps/cli/config/examples/harness2/install.py --profile web
 ```
 
@@ -37,7 +37,9 @@ python apps/cli/config/examples/harness2/install.py --profile web
 
 每个模型会话的默认时限为 3600 秒；完整循环包含多个会话。可以在已安装的 `harness2-mode` 配置中修改 `timeout`、`k` 或 `outputRoot`。状态命令显示当前产物路径，旁边的日志文件记录进度。失败或取消的运行保留产物，并且不视为成功结果。
 
-支持文本任务和项目文件。聊天附件请使用普通 dsh。快照排除虚拟环境、`node_modules`、`.git`、`.env` 凭据和 Erlang `_build` 输出。内部符号链接会重新定位到各个副本中；指向项目外部或失效的链接会被拒绝。超过 100 MB 或 10,000 个条目的快照会被拒绝。快照清单记录被排除的路径。
+支持文本任务和项目文件。聊天附件请使用普通 dsh。Git 项目的快照选择已跟踪文件和未被忽略的未跟踪输入。Git 子模块和嵌套仓库会被排除，不遍历其内容，因此忽略的构建目录和本地参考仓库不会进入快照。普通文件夹使用运行目录和凭据过滤规则。内部符号链接会重新定位到各个副本中；指向项目外部或失效的链接会被拒绝。
+
+默认限制仍为 100 MB 和 10,000 个条目。需要时可在已安装的插件配置中调整 `snapshotMaxBytes`、`snapshotMaxFiles` 和项目相对路径的 `snapshotExclude` 通配符。`snapshot.json` 记录字节数、文件数、最大的选中文件和排除原因（包括 Git 子模块）；规划失败时仍会保留此文件，并指出超过限制的指标与路径。
 
 失败后，请重新发送原始任务以创建新的循环。旧失败卡片仍然记录原始尝试。移除集成：
 

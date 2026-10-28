@@ -186,6 +186,19 @@ class InstalledDshModeTests(unittest.TestCase):
                     )
                     workspace = root / f"project{index}"
                     workspace.mkdir()
+                    if index == 2:
+                        subprocess.run(
+                            ["git", "-C", str(workspace), "init", "-q"],
+                            check=True,
+                            capture_output=True,
+                        )
+                        (workspace / ".gitignore").write_text("ignored-data/\n")
+                        (workspace / "input.txt").write_text("task input")
+                        (workspace / "ignored-data").mkdir()
+                        with (workspace / "ignored-data/generated.bin").open(
+                            "wb"
+                        ) as stream:
+                            stream.truncate(100_000_001)
                     env = {
                         **os.environ,
                         **overrides,
@@ -270,6 +283,22 @@ class InstalledDshModeTests(unittest.TestCase):
                             (Path(report["harness"]) / "systemprompt.md").is_file()
                         )
                         self.assertGreaterEqual(len(requests), 7)
+                        manifest = json.loads(
+                            (real_report.parent / "snapshot.json").read_text()
+                        )
+                        self.assertEqual(
+                            manifest["selection"], "git-tracked-and-untracked"
+                        )
+                        self.assertEqual(
+                            manifest["exclusion_reasons"]["ignored-data"], "git-ignore"
+                        )
+                        self.assertEqual(
+                            (Path(report["workspace"]) / "input.txt").read_text(),
+                            "task input",
+                        )
+                        self.assertFalse(
+                            (Path(report["workspace"]) / "ignored-data").exists()
+                        )
             self.assertEqual(len(list((plugin / "cycles").glob("*.request.json"))), 2)
 
 
