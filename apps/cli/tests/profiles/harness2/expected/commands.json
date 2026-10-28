@@ -1,0 +1,22 @@
+{
+  "on": {
+    "kind": "success",
+    "text": "Harness² ON for this chat. Each new text task runs a full cycle on project copies, then dsh receives the chosen result and harness. Use /harness2 off to stop."
+  },
+  "off": {
+    "kind": "success",
+    "text": "Harness² OFF for this chat. Ordinary dsh from the next task. Any active cycle is being stopped."
+  },
+  "status_on": {
+    "kind": "success",
+    "text": "Harness²: ON (this chat).\nNo cycle is running."
+  },
+  "status_off": {
+    "kind": "success",
+    "text": "Harness²: OFF (this chat).\nNo cycle is running."
+  },
+  "invalid": {
+    "kind": "error",
+    "text": "Usage: /harness2 on|off|status"
+  }
+}

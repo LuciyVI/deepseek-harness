@@ -1,0 +1,19 @@
+# Bilingual-pair consistency record for harness2.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write docs/user/guide/harness2.md
+/run-harness-from-a-chat:
+  en: 8eec9c2a101b3de5
+  zh: 60826a136b6f0795
+/run-harness-from-a-chat/install:
+  en: b627acbc8e8d6299
+  zh: 42a1faa361ceef24
+/run-harness-from-a-chat/use:
+  en: 6fadda4c0adcca47
+  zh: 30a952a919556a43
+/run-harness-from-a-chat/limits-and-recovery:
+  en: e7146f3107e1ebe2
+  zh: 0fac18410a15d90b
+/run-harness-from-a-chat/verify-without-a-model-key:
+  en: 613140e560123359
+  zh: 6a92c911e3b42c35
