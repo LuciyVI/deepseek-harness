@@ -280,6 +280,18 @@ class InstalledDshModeTests(unittest.TestCase):
                         self.assertTrue(report["ok"])
                         self.assertEqual(report["summary"]["status"], "ok")
                         self.assertTrue(
+                            list(
+                                real_report.parent.glob(
+                                    "audit/dsh-*/session.headless.jsonl"
+                                )
+                            ),
+                            "Improver trajectories must survive inside the cycle directory",
+                        )
+                        self.assertIn(
+                            "[harness2] completed after",
+                            real_report.parent.with_suffix(".log").read_text(),
+                        )
+                        self.assertTrue(
                             (Path(report["harness"]) / "systemprompt.md").is_file()
                         )
                         self.assertGreaterEqual(len(requests), 7)

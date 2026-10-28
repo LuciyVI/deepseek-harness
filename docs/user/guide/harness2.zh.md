@@ -11,7 +11,7 @@
 ```sh
 uv venv --python 3.12 .venv
 source .venv/bin/activate
-uv pip install 'harness2 @ git+https://github.com/LuciyVI/harness2.git@dsh-integration-v2'
+uv pip install 'harness2 @ git+https://github.com/LuciyVI/harness2.git@dsh-integration-v3'
 python apps/cli/config/examples/harness2/install.py --profile web
 ```
 
@@ -36,6 +36,15 @@ python apps/cli/config/examples/harness2/install.py --profile web
 ## 限制与恢复
 
 每个模型会话的默认时限为 3600 秒；完整循环包含多个会话。可以在已安装的 `harness2-mode` 配置中修改 `timeout`、`k` 或 `outputRoot`。状态命令显示当前产物路径，旁边的日志文件记录进度。失败或取消的运行保留产物，并且不视为成功结果。
+
+使用上述 Python 环境查看所有会话的状态。查看器默认选择最新的循环；如需查看其他循环，请传入 `/harness2 status` 显示的路径：
+
+```sh
+watch -n 2 harness2-dsh-status
+watch -n 2 harness2-dsh-status --cycle /absolute/path/to/cycles/<cycle-id>
+```
+
+外层聊天中的 `Deep diving` 表示正在等待循环。查看器显示已记录的步骤、阶段、终止原因和事件时间间隔，不显示模型或工具载荷。停留在 `step_start` 可能是在等待回复或工具；事件时间间隔不代表模型处于空闲状态。`max-tokens` 表示模型输出预算已用尽，与会话时限不同。日志记录失败尝试、重试和最终循环结果。改进会话的记录保存在循环的 `audit/` 中；查看器也会找到日志中关联到 `/tmp` 的旧改进会话记录。
 
 支持文本任务和项目文件。聊天附件请使用普通 dsh。Git 项目的快照选择已跟踪文件和未被忽略的未跟踪输入。Git 子模块和嵌套仓库会被排除，不遍历其内容，因此忽略的构建目录和本地参考仓库不会进入快照。普通文件夹使用运行目录和凭据过滤规则。内部符号链接会重新定位到各个副本中；指向项目外部或失效的链接会被拒绝。
 

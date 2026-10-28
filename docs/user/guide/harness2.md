@@ -11,7 +11,7 @@ Use this fork's `feat/harness2-integration` branch, Node 24, Python 3.12 or 3.13
 ```sh
 uv venv --python 3.12 .venv
 source .venv/bin/activate
-uv pip install 'harness2 @ git+https://github.com/LuciyVI/harness2.git@dsh-integration-v2'
+uv pip install 'harness2 @ git+https://github.com/LuciyVI/harness2.git@dsh-integration-v3'
 python apps/cli/config/examples/harness2/install.py --profile web
 ```
 
@@ -36,6 +36,15 @@ Trial runs leave the live project untouched. The regular dsh agent receives the 
 ## Limits and recovery
 
 Each model session has a 3600-second default deadline; a complete cycle includes several sessions. Change `timeout`, `k` or `outputRoot` in the installed `harness2-mode` entry. Status reports the active artifact path; the adjacent log reports progress. Failed and cancelled runs retain their artifacts and are not successful results.
+
+Use the Python environment installed above to watch all session states. The viewer selects the newest cycle by default; supply the path from `/harness2 status` to select another:
+
+```sh
+watch -n 2 harness2-dsh-status
+watch -n 2 harness2-dsh-status --cycle /absolute/path/to/cycles/<cycle-id>
+```
+
+`Deep diving` in the outer chat means it is waiting for the cycle. The viewer shows recorded steps, phase, termination reason and event age, without model or tool payloads. An unchanged `step_start` can be waiting for a response or tool; event age does not measure model inactivity. `max-tokens` is an exhausted model output budget, separate from the session deadline. The log reports failed attempts, retries and the final cycle result. Improver recordings stay under the cycle's `audit/`; the viewer also finds legacy improver recordings linked from the log under `/tmp`.
 
 Text tasks and project files are supported. Use ordinary dsh for chat attachments. In a Git project, snapshots select tracked files and non-ignored untracked inputs. Git submodules and nested repositories are excluded without traversing their contents. This keeps ignored build trees and local reference repositories out of the snapshot. Plain folders use the runtime and credential filters. Internal symbolic links are relocated into each copy; external and broken links are rejected.
 
