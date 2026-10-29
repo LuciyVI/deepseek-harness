@@ -11,7 +11,7 @@
 ```sh
 uv venv --python 3.12 .venv
 source .venv/bin/activate
-uv pip install 'harness2 @ git+https://github.com/LuciyVI/harness2.git@dsh-integration-v4'
+uv pip install 'harness2 @ git+https://github.com/LuciyVI/harness2.git@dsh-integration-v5'
 python apps/cli/config/examples/harness2/install.py --profile web
 ```
 
@@ -47,6 +47,8 @@ watch -n 2 harness2-dsh-status --cycle /absolute/path/to/cycles/<cycle-id>
 外层聊天中的 `Deep diving` 表示正在等待循环。查看器显示已记录的步骤、阶段、终止原因和事件时间间隔，不显示模型或工具载荷。停留在 `step_start` 可能是在等待回复或工具；事件时间间隔不代表模型处于空闲状态。`max-tokens` 表示模型输出预算已用尽，与会话时限不同。日志记录失败尝试、重试和最终循环结果。改进会话的记录保存在循环的 `audit/` 中；查看器也会找到日志中关联到 `/tmp` 的旧改进会话记录。
 
 查看器也显示后端错误消息。失败的循环会在 `result.json` 中保留递归摘要和执行失败报告。失败卡片显示失败的最终执行及其后端原因，并提供进度日志路径，不附加已记录的心跳行。更新扩展不会重写历史失败卡片。
+
+每次项目副本执行都会要求最终回复少于 200 个词，包含结果、验证状态、限制和产物的相对路径。完整交付物和详细报告保存在工作区文件中。改进后的 harness 和自定义 harness 也会收到此要求。这是给模型的指导；输出 token 预算保持不变，因 `max-tokens` 终止的执行仍会被判为失败。
 
 支持文本任务和项目文件。聊天附件请使用普通 dsh。Git 项目的快照选择已跟踪文件和未被忽略的未跟踪输入。Git 子模块和嵌套仓库会被排除，不遍历其内容，因此忽略的构建目录和本地参考仓库不会进入快照。普通文件夹使用运行目录和凭据过滤规则。内部符号链接会重新定位到各个副本中；指向项目外部或失效的链接会被拒绝。
 

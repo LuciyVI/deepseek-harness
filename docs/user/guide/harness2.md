@@ -11,7 +11,7 @@ Use this fork's `feat/harness2-integration` branch, Node 24, Python 3.12 or 3.13
 ```sh
 uv venv --python 3.12 .venv
 source .venv/bin/activate
-uv pip install 'harness2 @ git+https://github.com/LuciyVI/harness2.git@dsh-integration-v4'
+uv pip install 'harness2 @ git+https://github.com/LuciyVI/harness2.git@dsh-integration-v5'
 python apps/cli/config/examples/harness2/install.py --profile web
 ```
 
@@ -47,6 +47,8 @@ watch -n 2 harness2-dsh-status --cycle /absolute/path/to/cycles/<cycle-id>
 `Deep diving` in the outer chat means it is waiting for the cycle. The viewer shows recorded steps, phase, termination reason and event age, without model or tool payloads. An unchanged `step_start` can be waiting for a response or tool; event age does not measure model inactivity. `max-tokens` is an exhausted model output budget, separate from the session deadline. The log reports failed attempts, retries and the final cycle result. Improver recordings stay under the cycle's `audit/`; the viewer also finds legacy improver recordings linked from the log under `/tmp`.
 
 The viewer includes backend error messages. A failed cycle keeps its recursion summary and execution failure reports in `result.json`. The failure card names the failed final execution and its backend cause, with a link to the progress log. It does not append recorded heartbeat lines. Updating the extension does not rewrite historical failure cards.
+
+Each project-copy execution requests a final reply under 200 words: outcome, verification status, limitations and relative artifact paths. Complete deliverables and detailed reports stay in workspace files. This instruction also accompanies refined and custom harnesses. It is model guidance; output token budgets remain unchanged and a `max-tokens` termination still fails the execution.
 
 Text tasks and project files are supported. Use ordinary dsh for chat attachments. In a Git project, snapshots select tracked files and non-ignored untracked inputs. Git submodules and nested repositories are excluded without traversing their contents. This keeps ignored build trees and local reference repositories out of the snapshot. Plain folders use the runtime and credential filters. Internal symbolic links are relocated into each copy; external and broken links are rejected.
 
