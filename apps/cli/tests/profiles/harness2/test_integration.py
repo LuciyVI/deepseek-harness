@@ -301,6 +301,7 @@ class InstalledDshModeTests(unittest.TestCase):
                         "TEST_HARNESS2_WORKER_FAIL": "1" if index == 3 else "0",
                         "HARNESS2_DSH_HANDOFF_MAX_CHARS": "2000",
                         "HARNESS2_DSH_TASK_MAX_TOKENS": "16384",
+                        "HARNESS2_DSH_SESSION_TIMEOUT": "60",
                     }
                     requests_before = len(requests)
                     result = subprocess.run(
@@ -393,6 +394,17 @@ class InstalledDshModeTests(unittest.TestCase):
                         )
                         report = json.loads(real_report.read_text())
                         self.assertTrue(report["ok"])
+                        self.assertEqual(
+                            report.get("settings"),
+                            {
+                                "session_timeout_s": 60,
+                                "timeout_source": "HARNESS2_DSH_SESSION_TIMEOUT",
+                            },
+                        )
+                        request_file = real_report.parent.with_suffix(".request.json")
+                        self.assertEqual(
+                            json.loads(request_file.read_text())["timeout"], 10800
+                        )
                         self.assertEqual(report["summary"]["status"], "ok")
                         self.assertTrue(
                             list(
@@ -402,6 +414,12 @@ class InstalledDshModeTests(unittest.TestCase):
                             ),
                             "Improver trajectories must survive inside the cycle directory",
                         )
+                        for audit in real_report.parent.glob(
+                            "audit/dsh-*/session.result.json"
+                        ):
+                            self.assertEqual(
+                                json.loads(audit.read_text())["timeout_s"], 60
+                            )
                         self.assertIn(
                             "[harness2] completed after",
                             real_report.parent.with_suffix(".log").read_text(),
@@ -452,6 +470,7 @@ class InstalledDshModeTests(unittest.TestCase):
                             result = json.loads(
                                 (run / "dsh_session.result.json").read_text()
                             )
+                            self.assertEqual(result["timeout_s"], 60)
                             self.assertEqual(
                                 result["handoff"]["report_path"], "task-report.md"
                             )

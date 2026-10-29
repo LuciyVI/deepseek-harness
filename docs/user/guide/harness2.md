@@ -11,7 +11,7 @@ Use this fork's `feat/harness2-integration` branch, Node 24, Python 3.12 or 3.13
 ```sh
 uv venv --python 3.12 .venv
 source .venv/bin/activate
-uv pip install 'harness2 @ git+https://github.com/LuciyVI/harness2.git@dsh-integration-v7'
+uv pip install 'harness2 @ git+https://github.com/LuciyVI/harness2.git@dsh-integration-v8'
 python apps/cli/config/examples/harness2/install.py --profile web
 ```
 
@@ -35,7 +35,11 @@ Trial runs leave the live project untouched. The regular dsh agent receives the 
 
 ## Limits and recovery
 
-Each model session has a 3600-second default deadline; a complete cycle includes several sessions. Change `timeout`, `k` or `outputRoot` in the installed `harness2-mode` entry. Status reports the active artifact path; the adjacent log reports progress. Failed and cancelled runs retain their artifacts and are not successful results.
+Each child dsh session has a 10800-second default deadline; a complete cycle includes several sessions. Configure it with `python apps/cli/config/examples/harness2/install.py --profile web --timeout 10800`, or change `timeout` in the installed `harness2-mode` entry. Status reports the active artifact path; the adjacent log reports progress. Failed and cancelled runs retain their artifacts and are not successful results.
+
+Each new Python worker reads `HARNESS2_DSH_SESSION_TIMEOUT` as an operator override, taking precedence over the controller, including an already loaded controller with an older deadline. For an editable harness2 installation, edit its checkout `.env` to apply the override to new workers without restarting dsh. Shell values take precedence over `.env`. The cycle log and `result.json` under `settings` record the effective timeout and its source.
+
+The deadline includes model queue waits, prefill, generation and tools. Competing clients on a shared model server can consume it while dsh waits. Expiration records `wall-timeout`, stops owned processes and preserves the incomplete workspace; it never adopts partial output or replays the task.
 
 Use the Python environment installed above to watch all session states. The viewer selects the newest cycle by default; supply the path from `/harness2 status` to select another:
 

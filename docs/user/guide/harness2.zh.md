@@ -11,7 +11,7 @@
 ```sh
 uv venv --python 3.12 .venv
 source .venv/bin/activate
-uv pip install 'harness2 @ git+https://github.com/LuciyVI/harness2.git@dsh-integration-v7'
+uv pip install 'harness2 @ git+https://github.com/LuciyVI/harness2.git@dsh-integration-v8'
 python apps/cli/config/examples/harness2/install.py --profile web
 ```
 
@@ -35,7 +35,11 @@ python apps/cli/config/examples/harness2/install.py --profile web
 
 ## 限制与恢复
 
-每个模型会话的默认时限为 3600 秒；完整循环包含多个会话。可以在已安装的 `harness2-mode` 配置中修改 `timeout`、`k` 或 `outputRoot`。状态命令显示当前产物路径，旁边的日志文件记录进度。失败或取消的运行保留产物，并且不视为成功结果。
+每个子 dsh 会话的默认时限为 10800 秒；完整循环包含多个会话。可通过 `python apps/cli/config/examples/harness2/install.py --profile web --timeout 10800` 配置，或修改已安装的 `harness2-mode` 配置中的 `timeout`。状态命令显示当前产物路径，旁边的日志文件记录进度。失败或取消的运行保留产物，并且不视为成功结果。
+
+每个新 Python worker 都读取 `HARNESS2_DSH_SESSION_TIMEOUT` 作为部署覆盖值，其优先级高于控制器配置，也适用于已加载且仍使用旧时限的控制器。对于以可编辑方式安装的 harness2，可修改其检出目录中的 `.env`，使覆盖值在新 worker 中生效，无需重启 dsh。Shell 变量的优先级高于 `.env`。循环日志和 `result.json` 中的 `settings` 记录实际时限及其来源。
+
+时限包括模型排队等待、prefill、生成和工具执行。共享模型服务器上的其他客户端可能在 dsh 等待期间耗尽此预算。到期时记录 `wall-timeout`，停止所属进程并保留未完成的工作区；不会采用部分输出或重放任务。
 
 使用上述 Python 环境查看所有会话的状态。查看器默认选择最新的循环；如需查看其他循环，请传入 `/harness2 status` 显示的路径：
 
