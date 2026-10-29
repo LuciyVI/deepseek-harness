@@ -11,7 +11,7 @@ Use this fork's `feat/harness2-integration` branch, Node 24, Python 3.12 or 3.13
 ```sh
 uv venv --python 3.12 .venv
 source .venv/bin/activate
-uv pip install 'harness2 @ git+https://github.com/LuciyVI/harness2.git@dsh-integration-v6'
+uv pip install 'harness2 @ git+https://github.com/LuciyVI/harness2.git@dsh-integration-v7'
 python apps/cli/config/examples/harness2/install.py --profile web
 ```
 
@@ -48,7 +48,9 @@ watch -n 2 harness2-dsh-status --cycle /absolute/path/to/cycles/<cycle-id>
 
 The viewer includes backend error messages. A failed cycle keeps its recursion summary and execution failure reports in `result.json`. The failure card names the failed final execution and its backend cause, with a link to the progress log. It does not append recorded heartbeat lines. Updating the extension does not rewrite historical failure cards.
 
-Each project-copy execution finishes with the native `harness2_finish` tool, which concludes the turn without another model reply. Save the complete deliverable and verification report in workspace files, then submit a truthful `summary` and relative `report_path`. `HARNESS2_DSH_HANDOFF_MAX_CHARS` bounds the summary (default 2000 Unicode characters). The report must be an existing nonempty regular file inside the workspace; symbolic links and outside paths are rejected. Later tool calls are blocked after the accepted handoff. Baseline, refined and custom harness executions require a recorded successful handoff, completed durable turn and zero process exit. Plain final text and `max-tokens` remain failures. Model output budgets stay unchanged.
+Each project-copy execution finishes with the native `harness2_finish` tool, which concludes the turn without another model reply. Save the complete deliverable and verification report in workspace files, then submit a truthful `summary` and relative `report_path`. `HARNESS2_DSH_HANDOFF_MAX_CHARS` bounds the summary (default 2000 Unicode characters). The report must be an existing nonempty regular file inside the workspace; symbolic links and outside paths are rejected. Later tool calls are blocked after the accepted handoff. Baseline, refined and custom harness executions require a recorded successful handoff, completed durable turn and zero process exit. Plain final text and `max-tokens` remain failures.
+
+Project-copy task requests use 16384 output tokens per model response, configured through `HARNESS2_DSH_TASK_MAX_TOKENS`. Commentary and tool-call arguments share this fixed budget. Other dsh sessions keep their source-profile budgets; the session wall timeout remains separate. On exhaustion, diagnostics identify pending tools from raw argument chunks. A parser may repair partial JSON into a valid-looking block, which does not make the original call complete. Truncated calls are never executed or adopted.
 
 Text tasks and project files are supported. Use ordinary dsh for chat attachments. In a Git project, snapshots select tracked files and non-ignored untracked inputs. Git submodules and nested repositories are excluded without traversing their contents. This keeps ignored build trees and local reference repositories out of the snapshot. Plain folders use the runtime and credential filters. Internal symbolic links are relocated into each copy; external and broken links are rejected.
 

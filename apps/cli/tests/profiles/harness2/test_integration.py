@@ -90,7 +90,7 @@ class InstalledDshModeTests(unittest.TestCase):
                         if wrote
                         else {
                             "file_path": "task-report.md",
-                            "content": "Fixture verification evidence.\n",
+                            "content": "Fixture verification evidence.\n" * 1500,
                         }
                     )
                     if wrote and finished_calls == 0:
@@ -172,14 +172,21 @@ class InstalledDshModeTests(unittest.TestCase):
                             "baseURL": f"http://127.0.0.1:{server.server_port}/v1",
                             "apiKeyEnv": "TEST_DSH_MODE_KEY",
                             "reasoning": "off",
-                            "defaultContextWindow": 32768,
+                            "compat": {
+                                "thinkingFormat": "deepseek",
+                                "maxTokensField": "max_tokens",
+                                "supportsReasoningEffort": True,
+                                "supportsDeveloperRole": False,
+                            },
+                            "defaultContextWindow": 262144,
                             "defaultMaxTokens": 1024,
                             "models": [
                                 {
                                     "id": "test-model",
                                     "name": "test-model",
-                                    "contextWindow": 32768,
+                                    "contextWindow": 262144,
                                     "maxTokens": 1024,
+                                    "reasoningEfforts": {"off": None, "high": "high"},
                                     "input": ["text"],
                                 }
                             ],
@@ -293,6 +300,7 @@ class InstalledDshModeTests(unittest.TestCase):
                         "TEST_DSH_MODE_KEY": "test-only",
                         "TEST_HARNESS2_WORKER_FAIL": "1" if index == 3 else "0",
                         "HARNESS2_DSH_HANDOFF_MAX_CHARS": "2000",
+                        "HARNESS2_DSH_TASK_MAX_TOKENS": "16384",
                     }
                     requests_before = len(requests)
                     result = subprocess.run(
@@ -370,11 +378,13 @@ class InstalledDshModeTests(unittest.TestCase):
                         self.assertIn("NATIVE_MODE_GUIDANCE", visible)
                         self.assertIn("Chosen cycle response", visible)
                     elif index == 1:
+                        self.assertEqual(requests[-1].get("max_tokens"), 1024)
                         self.assertIn("OFF", serialized)
                         self.assertIn("Usage:", serialized)
                         self.assertNotIn("NATIVE_MODE_GUIDANCE", visible)
                         self.assertNotIn("Harness² mode is enabled", visible)
                     else:
+                        self.assertEqual(requests[-1].get("max_tokens"), 1024)
                         self.assertIn("Harness\\u00b2 full cycle completed", visible)
                         real_report = next(
                             path
@@ -427,7 +437,13 @@ class InstalledDshModeTests(unittest.TestCase):
                                 )
                                 for request in execution_requests
                             ],
-                            [1024] * 16,
+                            [16384] * 16,
+                        )
+                        self.assertTrue(
+                            all(
+                                request.get("thinking") == {"type": "disabled"}
+                                for request in execution_requests
+                            )
                         )
                         for run in real_report.parent.glob("executions/*/*/*"):
                             self.assertFalse(
@@ -438,6 +454,10 @@ class InstalledDshModeTests(unittest.TestCase):
                             )
                             self.assertEqual(
                                 result["handoff"]["report_path"], "task-report.md"
+                            )
+                            self.assertEqual(
+                                (run / "workspace/task-report.md").read_text(),
+                                "Fixture verification evidence.\n" * 1500,
                             )
                         manifest = json.loads(
                             (real_report.parent / "snapshot.json").read_text()

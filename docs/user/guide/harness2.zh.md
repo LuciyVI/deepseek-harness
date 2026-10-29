@@ -11,7 +11,7 @@
 ```sh
 uv venv --python 3.12 .venv
 source .venv/bin/activate
-uv pip install 'harness2 @ git+https://github.com/LuciyVI/harness2.git@dsh-integration-v6'
+uv pip install 'harness2 @ git+https://github.com/LuciyVI/harness2.git@dsh-integration-v7'
 python apps/cli/config/examples/harness2/install.py --profile web
 ```
 
@@ -48,7 +48,9 @@ watch -n 2 harness2-dsh-status --cycle /absolute/path/to/cycles/<cycle-id>
 
 查看器也显示后端错误消息。失败的循环会在 `result.json` 中保留递归摘要和执行失败报告。失败卡片显示失败的最终执行及其后端原因，并提供进度日志路径，不附加已记录的心跳行。更新扩展不会重写历史失败卡片。
 
-每次项目副本执行都通过原生 `harness2_finish` 工具结束，该工具终结当前轮次，无需模型再生成回复。先将完整交付物和验证报告保存在工作区文件中，再提交如实的 `summary` 和相对路径 `report_path`。`HARNESS2_DSH_HANDOFF_MAX_CHARS` 限制摘要长度（默认 2000 个 Unicode 字符）。报告必须是工作区内已存在且非空的普通文件；符号链接和工作区外路径会被拒绝。交接被接受后，后续工具调用会被阻止。基线、改进和自定义 harness 执行都必须具备已记录的成功交接、正常完成的持久化轮次和零进程退出码。普通最终文本和 `max-tokens` 仍视为失败。模型输出预算保持不变。
+每次项目副本执行都通过原生 `harness2_finish` 工具结束，该工具终结当前轮次，无需模型再生成回复。先将完整交付物和验证报告保存在工作区文件中，再提交如实的 `summary` 和相对路径 `report_path`。`HARNESS2_DSH_HANDOFF_MAX_CHARS` 限制摘要长度（默认 2000 个 Unicode 字符）。报告必须是工作区内已存在且非空的普通文件；符号链接和工作区外路径会被拒绝。交接被接受后，后续工具调用会被阻止。基线、改进和自定义 harness 执行都必须具备已记录的成功交接、正常完成的持久化轮次和零进程退出码。普通最终文本和 `max-tokens` 仍视为失败。
+
+项目副本任务的每次模型回复使用 16384 个输出 token，可通过 `HARNESS2_DSH_TASK_MAX_TOKENS` 配置。说明文本和工具调用参数共用此固定预算。其他 dsh 会话保持原配置预算；会话总时限是独立限制。预算用尽时，诊断从原始参数片段识别尚未执行的工具。解析器可能把不完整 JSON 修复成看似有效的块，但这不代表原始调用完整。被截断的调用不会执行或采用。
 
 支持文本任务和项目文件。聊天附件请使用普通 dsh。Git 项目的快照选择已跟踪文件和未被忽略的未跟踪输入。Git 子模块和嵌套仓库会被排除，不遍历其内容，因此忽略的构建目录和本地参考仓库不会进入快照。普通文件夹使用运行目录和凭据过滤规则。内部符号链接会重新定位到各个副本中；指向项目外部或失效的链接会被拒绝。
 
